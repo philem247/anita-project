@@ -1,65 +1,46 @@
-import Image from "next/image";
+'use client';
+import { useState, useRef } from "react";
+import MatrixRain from "../components/MatrixRain";
+import BookScene from "../components/BookScene";
+import PhotoGallery from "../components/PhotoGallery";
 
 export default function Home() {
+  // We start at step -1 for the "Tap to Begin" screen
+  const [step, setStep] = useState(-1); 
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const photos = Array.from({ length: 25 }).map((_, i) => `/assets/photo-${i + 1}.jpg`);
+
+  const handleStart = () => {
+    // Play the audio on this first interaction
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
+    }
+    // Move to the Matrix sequence
+    setStep(0);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="w-full min-h-screen bg-black text-white font-sans overflow-hidden">
+      {/* Audio element is attached to a ref so we can trigger it */}
+      <audio ref={audioRef} id="bg-audio" src="/assets/bg-music.mp3" loop />
+
+      {/* STEP -1: The Entry Gate to unlock audio */}
+      {step === -1 && (
+        <div className="absolute inset-0 flex items-center justify-center z-50 bg-black">
+          <button 
+            onClick={handleStart}
+            className="px-8 py-4 bg-pink-900/40 border border-pink-500/50 rounded-full text-pink-300 tracking-widest hover:bg-pink-800/60 hover:scale-105 transition-all duration-300 animate-pulse"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            TAP HERE FOR A SURPRISE
+          </button>
         </div>
-      </main>
-    </div>
+      )}
+
+      {/* The rest of your scenes */}
+      {step === 0 && <MatrixRain onComplete={() => setStep(1)} />}
+      {step === 1 && <BookScene onOpen={() => setStep(2)} />}
+      {step === 2 && <PhotoGallery photos={photos} />}
+    </main>
   );
 }
